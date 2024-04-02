@@ -6,11 +6,13 @@ import Constants from 'expo-constants';
 
 let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
+let screenHeight = Dimensions.get('screen').height;
+let screenWidth = Dimensions.get('screen').width;
 
 export default class App extends Component {
     state = {
-        screens: ['block', 'none', 'none', 'none', 'none', 'none', 'none'], // DONT SAVE
-        gambleScreens: ["block", "none", "none", "none"], // DONT SAVE
+        screens: ['none', 'none', 'block', 'none', 'none', 'none', 'none'], // DONT SAVE
+        gambleScreens: ["none", "block", "none", "none"], // DONT SAVE
         stockScreens: ['block', 'none '],
         diceGambleNum: 1, // DONT SAVE
         maxDiceNum: 0, // DONT SAVE
@@ -300,18 +302,18 @@ export default class App extends Component {
                                 {this.state.cookies.toFixed(1) + " Cookies"} 
                             </Text>
                             {/* Cookie to click on and adds yout current click power's amount to total cookies */}
-                            <TouchableOpacity style={{ height: deviceHeight/2.66, width: deviceWidth/1.49, borderRadius: (deviceHeight/2.66)/2, background: 'grey' }}
+                            <TouchableOpacity style={{ borderRadius: (screenHeight/5.5), background: 'grey' }}
                                 onPress={() => {
                                     this.setState({cookies: this.state.cookies+this.state.clickPower})
                                 }}
                                 activeOpacity={.8}
                             >
                             {/* cookie spin */}
-                                <View style={{transform: [{rotate: this.state.cookieRot + 'deg'}], marginBottom: 5,}}>
+                                <View style={{transform: [{rotate: this.state.cookieRot + 'deg'}], }}>
                                 {/* cookie's image */}
                                     <Image
                                         source={{ uri: 'https://codehs.com/uploads/6529cb528ca6905cfd4fd79a5f5bce9a' }}
-                                        style={{ height: deviceHeight/2.66, width: deviceWidth, alignSelf: 'center' }}
+                                        style={{ height: screenWidth/5.5, width: screenWidth/5.5, alignSelf: 'center' }}
                                     />
                                 </View>
                             </TouchableOpacity>
@@ -372,7 +374,7 @@ export default class App extends Component {
                 {
                     <ScrollView style={styles.upgradeC}>
                         <View style={styles.buildingBar}>
-                            <Text style={styles.towerText}> Click Power - {this.state.clickPower} </Text>
+                            <Text style={styles.towerText}>Click Power - {this.state.clickPower} </Text>
                             <TouchableOpacity style={styles.buyButton}
                                 onPress={() => {
                                    this.increaseClick();
@@ -441,7 +443,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/e9ab66d0a796ea164363e7e3830e7239' }}
-                                                    style={{ height: deviceHeight/13.389, width: deviceWidth / 7.5}}
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}
                                                     />
                                                 </TouchableHighlight>
                                             </View>
@@ -453,7 +455,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/f2b51d987924500632b6d17b52fea0ee' }}
-                                                    style={{ height: deviceHeight/13.389, width: deviceWidth / 7.5 * 1.125}}
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}
                                                     />
                                                 </TouchableHighlight>
                                             </View>
@@ -465,8 +467,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/3a347f2d33efd9d497f601c800f0c83e' }}
-                                                    style={{ height: deviceHeight/13.389, width: deviceWidth / 7.5}}
-                                                    />
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
                                                 </TouchableHighlight>
                                             </View>
                                             
@@ -477,8 +478,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/5fd52273379e5f598a79ed9ffb4acdc5' }}
-                                                    style={{ height: deviceHeight/13.389 * 1.224, width: deviceWidth / 7.5}}
-                                                    />
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
                                                 </TouchableHighlight>
                                             </View>
                                         </View>
@@ -491,8 +491,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/7627dcfd38370770b273d947e4c6bf2d' }}
-                                                    style={{ height: deviceHeight/13.389, width: deviceWidth / 7.5 * 1.224}}
-                                                    />
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
                                                 </TouchableHighlight>
                                             </View>
                                             
@@ -503,8 +502,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/c596cad96509fb446fd417a6e2179091' }}
-                                                    style={{ height: deviceHeight/13.389, width: deviceWidth / 7.5 * 1.03}}
-                                                    />
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
                                                 </TouchableHighlight>
                                             </View>
                                             
@@ -515,8 +513,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/4ea8cafa629229f5a97886925924033e' }}
-                                                    style={{ height: deviceHeight/13.389 * 1.125, width: deviceWidth / 7.5}}
-                                                    />
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
                                                 </TouchableHighlight>
                                             </View>
                                             
@@ -527,8 +524,7 @@ export default class App extends Component {
                                                 >
                                                     <Image
                                                     source={{ uri: 'https://codehs.com/uploads/3cb71656381b30606f50f37ec63ead60' }}
-                                                    style={{ height: deviceHeight/13.389, width: deviceWidth / 7.5 * 1.224}}
-                                                    />
+                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
                                                 </TouchableHighlight>
                                             </View>
                                         </View>
@@ -669,12 +665,13 @@ export default class App extends Component {
 //Width is 298
 const styles = StyleSheet.create({
     container: {
+
         height: deviceHeight,
         width: deviceWidth,
         backgroundColor: '#8b6c5c',
     },
     cookieC: {
-        flex: 5.5,
+        height: deviceHeight/1.75,
         backgroundColor: '#8b6c5c',
         alignItems: 'center',
         justifyContent: 'center',
@@ -692,7 +689,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#a9a9a9',
     },
     buildingBar:{
-        height: deviceHeight/12,
+        height: screenHeight/12,
         width: deviceWidth,
         backgroundColor: 'green',
         borderBottomWidth: deviceHeight/266,
@@ -701,7 +698,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     buyButton: {
-        height: deviceHeight/20,
+        height: screenHeight/20,
         width: deviceWidth/3,
         borderWidth: deviceWidth/deviceWidth,
         borderRadius: (deviceHeight/5.32)/2, //Maybe an issue
@@ -716,11 +713,11 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     tabs: {
-        height: deviceHeight/15,
+        height: screenHeight/15,
         width: deviceWidth/4,
         borderWidth: deviceWidth/deviceWidth,
-        borderTopRightRadius: (deviceHeight/15)/2,
-        borderTopLeftRadius: (deviceHeight/15)/2,
+        borderTopRightRadius: (screenHeight/15)/2,
+        borderTopLeftRadius: (screenHeight/15)/2,
         backgroundColor: 'lightgreen',
         alignItems: 'center',
         justifyContent: 'center',
@@ -728,31 +725,31 @@ const styles = StyleSheet.create({
     },
     cpsText: {
         color: '#ffffff',
-        fontSize: deviceWidth/12,
+        fontSize: screenWidth/45,
         fontWeight: 'bold',
         marginTop: deviceHeight/25,
     },
     cookieText: {
         color: 'white',
-        fontSize: deviceWidth/10.643,
+        fontSize: screenWidth/45,
         fontWeight: 'bold',
     },
     bigText: {
         color: 'white',
-        fontSize: deviceWidth/7.45,
+        fontSize: screenWidth/25,
         fontWeight: 'bold',
-        textAlign: "center"
+        textAlign: "center",
     },
     gambleText: {
         color: 'white',
-        fontSize: deviceWidth/14.9,
+        fontSize: screenHeight/20,
         fontWeight: 'bold',
-        textAlign: "Center",
-        marginVertical: deviceHeight / 80,
+        textAlign: "center",
+        marginVertical: deviceHeight / 60,
     },
     smallText: {
         color: 'white',
-        fontSize: deviceWidth/19.867,
+        fontSize: screenHeight/19.867,
         fontWeight: 'bold',
         textAlign: "Center",
         marginVertical: deviceHeight / 80,
@@ -760,7 +757,7 @@ const styles = StyleSheet.create({
     towerText: {
         width: deviceWidth/0.851,
         color: 'white',
-        fontSize: deviceWidth/14.9,
+        fontSize: screenHeight/25,
         fontWeight: '200',
         justifyContent: 'flex-start',
     },
@@ -782,11 +779,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         marginHorizontal: deviceWidth / 15,
-        height: deviceHeight / 20,
+        height: screenHeight / 20,
         width: deviceWidth/11.203,
     },
     gambleInput: {
-        height: deviceHeight/10,
+        height: screenHeight/10,
         width: deviceWidth/1.25,
         backgroundColor: 'lightGreen',
         borderColor: 'darkGreen',
@@ -796,7 +793,7 @@ const styles = StyleSheet.create({
         marginTop: deviceHeight/17.674,
     },
     enterButton: {
-        height: deviceHeight/10,
+        height: screenHeight/10,
         width: deviceWidth/2.2,
         backgroundColor: 'lightgreen',
         borderColor: 'green',
