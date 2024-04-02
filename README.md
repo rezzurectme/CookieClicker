@@ -15,3 +15,5 @@ EX: | Towers | Upgrades | ...
 
 Under the Tab bar, there lays the content of the tab you selected
 for example, the towers tab will have the different towers listed with how many you have of each and what the cost to buy 1 is.
+
+I will let players play test beta versions and take notes on balances wanted and test again
