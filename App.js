@@ -8,24 +8,35 @@ let deviceHeight = Dimensions.get('window').height;
 let deviceWidth = Dimensions.get('window').width;
 let screenHeight = Dimensions.get('screen').height;
 let screenWidth = Dimensions.get('screen').width;
+let cookieHeight = deviceHeight/3;
 
 export default class App extends Component {
     state = {
         screens: ['none', 'none', 'block', 'none', 'none', 'none', 'none'], // DONT SAVE
-        gambleScreens: ["none", "block", "none", "none"], // DONT SAVE
+        gambleScreens: ['none', 'none', 'block', 'none'], // DONT SAVE
         stockScreens: ['block', 'none '],
         diceGambleNum: 1, // DONT SAVE
         maxDiceNum: 0, // DONT SAVE
         numRolled: 0, // DONT SAVE
         betAmount: "", // DONT SAVE
         cookiesWonInGamble: "Won: ?", // DONT SAVE
-        cookies: 0.00,
+        cookies: 111111111111110.00,
         cookieS: '',
         cookieRot: 0, // DONT SAVE
         clickPower: 1,
         clickPrice: 500,
         cps: 0.00, //DONT SAVE
         encodedCode: "",
+        gambleImages: {
+            'https://codehs.com/uploads/e9ab66d0a796ea164363e7e3830e7239': 2,
+            'https://codehs.com/uploads/f2b51d987924500632b6d17b52fea0ee': 4,
+            'https://codehs.com/uploads/3a347f2d33efd9d497f601c800f0c83e': 6,
+            'https://codehs.com/uploads/5fd52273379e5f598a79ed9ffb4acdc5': 8,
+            'https://codehs.com/uploads/7627dcfd38370770b273d947e4c6bf2d': 10,
+            'https://codehs.com/uploads/c596cad96509fb446fd417a6e2179091': 12,
+            'https://codehs.com/uploads/4ea8cafa629229f5a97886925924033e': 20,
+            'https://codehs.com/uploads/3cb71656381b30606f50f37ec63ead60': 100,
+        },
         tabs: [
             'towers',
             'upgrades',
@@ -36,12 +47,12 @@ export default class App extends Component {
         //buildings to click for you
         //FOR BUILDINGS = 0:COST, 1:AMOUNT, 2:CPS, 3: OG COST
         buildings: {
-            'Pointers': [15, 0, 0.1, 15],
-            'Grandmas': [100, 0, 1.0, 100],
-            'Farms': [1100, 0, 8.0, 1100],
-            'Mines': [12000, 0, 47.0, 12000],
-            'Factory': [130000, 0, 260.0, 130000],
-            'Bank': [1400000, 0, 1400, 1400000],
+            'Pointers': [15, 1, 0.1, 15],
+            'Grandmas': [100, 1, 1.0, 100],
+            'Farms': [1100, 1, 8.0, 1100],
+            'Mines': [12000, 1, 47.0, 12000],
+            'Factory': [130000, 1, 260.0, 130000],
+            'Bank': [1400000, 1, 1400, 1400000],
             'Temple': [20000000, 0, 7800, 20000000],
             'Wizard Tower': [330000000, 0, 44000, 330000000]
         },
@@ -57,13 +68,13 @@ export default class App extends Component {
             'Temple': [20000000*7.5, 1.00],
             'Wizard Tower': [330000000*7.5, 1.00]
         },
-        //FOR stocks = 0:COST, 1:OG price,  2:AMOUNT BOUGHT, 3:Y cordinate
+        //FOR stocks = 0:COST, 1:OG price,  2:AMOUNT BOUGHT, 3: LIMIT TO BUY AMOUNT, 4: UP TIME OF STOCK, 5: Y CORDS
         stocks: {
-          'Sugar': [10, 10, 0, deviceHeight/1.9/2],
-          'Dough': [15, 15, 0, deviceHeight/1.9/2],
-          'Chocolate': [25, 25, 0, deviceHeight/1.9/2],
-          'Flour': [75, 75, 0, deviceHeight/1.9/2],
-          'Coco Powder': [150, 150, 0, deviceHeight/1.9/2],
+          'Sugar': [10, 10, 0, 1, 1.0, deviceHeight/1.9/2],
+          'Dough': [15, 15, 0, 1, 1.0, deviceHeight/1.9/2],
+          'Chocolate': [25, 25, 1, 0, 1.0, deviceHeight/1.9/2],
+          'Flour': [75, 75, 0, 1, 1.0, deviceHeight/1.9/2],
+          'Coco Powder': [150, 150, 0, 1, 1.0,  deviceHeight/1.9/2],
         },
         save: '',
         saveString: '',
@@ -111,30 +122,6 @@ export default class App extends Component {
         }
         this.setState({ cookies: this.state.cookies + total, cps: total});
     }, 1000 );
-    
-    stockPrices = () => {
-        const {stocks, buildings} = this.state;
-        
-    }
-    
-    stockChanges = setInterval(() => {
-        const {stocks} = this.state;
-        const riseOrFall = Math.floor((Math.random() * 3) + 1);
-        const amtChange = Math.floor((Math.random() * 5) + 1) * .1 + 1;
-        // GOING DOWN
-        if(riseOrFall == 1){
-        //stocks['Sugar'][0] = stocks['Sugar'][0] - (Math.floor((Math.floor(Math.pow(stocks['Sugar'][1], amtChange)) * .1 + 1) * 100) / 100);
-        stocks['Sugar'][3] = stocks['Sugar'][3] + amtChange;
-        }
-        // GOING UP
-        else if(riseOrFall == 2){
-        //stocks['Sugar'][0] = stocks['Sugar'][0] + (Math.floor((Math.floor(Math.pow(stocks['Sugar'][1], amtChange)) * .1 + 1) * 100) / 100);
-        stocks['Sugar'][3] = stocks['Sugar'][3] - amtChange;
-        }
-        if(stocks['Sugar'][0] <= 0){
-            stocks['Sugar'][0] = 1;
-        }
-    }, 7500);
     
     //COOKIE ROTATION
     cookieRotation = setInterval(() => {
@@ -291,6 +278,32 @@ export default class App extends Component {
         }
     }
 
+    stockChanges = setInterval(() => {
+        const { stocks, buildings } = this.state;
+        const stockNames = Object.keys(stocks);
+        const buildingNames = Object.keys(buildings);
+        var stockChangeAmount = 0;
+        for(let i = 0; i < stockNames.length; i++) {
+            stocks[stockNames[i]][3] = buildings[buildingNames[i]][1]
+            var randomNumberBatch = Math.ceil(25 / (stocks[stockNames[i]][4] / 5));
+            
+            if(randomNumberBatch < 5) {
+                randomNumberBatch = 5;
+            }
+            else if(randomNumberBatch > 100){
+                randomNumberBatch = 100;
+            }
+
+            for(let i = 0; i < randomNumberBatch; i++)
+                stockChangeAmount += Math.ceil(Math.random() * 100)
+            
+        stockChangeAmount /= randomNumberBatch;
+        stockChangeAmount *= 0.1;
+        stocks[stockNames[i]][0] *= stockChangeAmount;
+        }
+    }, 7000);
+    
+
     render() {
         return (
             <View style={styles.container}>
@@ -404,13 +417,13 @@ export default class App extends Component {
                 <View style = {{display: this.state.screens[2] }}> {/*DO NOT TOUCH STYLING WITHOUT A BACKUP, THINGS ARE A BIT WHACKY AND PARTICULAR*/}
                 { 
                     <View style = {styles.upgradeC}>
-                        <View style={{background: 'green', flex: 1, justifyContent: 'center', alignItems: 'center'}}>    
+                        <View style={{background: 'green', height: cookieHeight}}>    
                             {
                                 
                                 <View style = {{display: this.state.gambleScreens[0] }}>
-                                    <View style={{justifyContent: 'center', alignItems: "center"}}>
+                                    <View style={{justifyContent: 'space-evenly', alignItems: "center", height: cookieHeight}}>
                                         <View style={styles.gambleInput}>
-                                            <TextInput style={{width: deviceWidth/1.5}}
+                                            <TextInput
                                                 placeholder={'Enter bet amount here'}
                                                 onChangeText={(betAmount) => this.setState({betAmount})}
                                                 value={this.state.betAmount}
@@ -432,7 +445,7 @@ export default class App extends Component {
                             } {/*Insert Bet Amount Screen*/}
                             {
                             <View style = {{display: this.state.gambleScreens[1] }}>
-                                <View style={{justifyContent: 'center'}}>
+                                <View style={{}}>
                                     <Text style = {styles.gambleText}> Select Dice </Text> 
                                     { <View>
                                         <View style={styles.rowContainer}>
@@ -534,8 +547,8 @@ export default class App extends Component {
                             } {/*Dice Select Screen*/}
                             {
                             <View style = {{display: this.state.gambleScreens[2] }}>
-                                <View style={{justifyContent: 'center', alignItems: "center"}}>
-                                    <Text style = {styles.gambleText}> Select Number To Bet On </Text>
+                               <View style={{ alignItems: "center",height: cookieHeight,}}>
+                                    <Text style = {styles.smallGambleText}> Select Number To Bet On </Text>
                                     <View style={styles.rowContainer}>
                                         <TouchableHighlight 
                                                 underlayColor = "clear"
@@ -659,19 +672,20 @@ export default class App extends Component {
             </View>
         );
     }
+
+    
 }
 
 //Height is 532
 //Width is 298
 const styles = StyleSheet.create({
     container: {
-
         height: deviceHeight,
         width: deviceWidth,
         backgroundColor: '#8b6c5c',
     },
     cookieC: {
-        height: deviceHeight/1.75,
+        height: deviceHeight/1.8,
         backgroundColor: '#8b6c5c',
         alignItems: 'center',
         justifyContent: 'center',
@@ -709,11 +723,10 @@ const styles = StyleSheet.create({
     tabsC: {
         flexDirection: 'row',
         width: deviceWidth,
-        flex: 1,
         alignSelf: 'center',
     },
     tabs: {
-        height: screenHeight/15,
+        height: deviceHeight/15,
         width: deviceWidth/4,
         borderWidth: deviceWidth/deviceWidth,
         borderTopRightRadius: (screenHeight/15)/2,
@@ -744,8 +757,13 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: screenHeight/20,
         fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    smallGambleText: {
+        color: 'white',
+        fontSize: screenHeight/30,
+        fontWeight: 'bold',
         textAlign: "center",
-        marginVertical: deviceHeight / 60,
     },
     smallText: {
         color: 'white',
@@ -784,22 +802,17 @@ const styles = StyleSheet.create({
     },
     gambleInput: {
         height: screenHeight/10,
-        width: deviceWidth/1.25,
-        backgroundColor: 'lightGreen',
-        borderColor: 'darkGreen',
-        borderWidth: deviceWidth/45,
+        width: deviceWidth/1.5,
+        backgroundColor: 'lightgreen',
+        borderColor: 'darkgreen',
+        borderWidth: screenWidth/100,
         justifyContent: 'center',
-        alignItems: 'center',
         marginTop: deviceHeight/17.674,
     },
     enterButton: {
-        height: screenHeight/10,
-        width: deviceWidth/2.2,
+        height: screenHeight/15,
+        width: deviceWidth/2,
         backgroundColor: 'lightgreen',
-        borderColor: 'green',
-        borderWidth: deviceWidth/45,
-        justifyContent: 'center',
         alignItems: 'center',
-        marginTop: deviceHeight/40,
     },
 });
