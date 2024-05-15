@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AppRegistry, Text, View, StyleSheet, Image, TouchableHighlight, TouchableOpacity, Alert, Dimensions, ScrollView, TextInput, } from 'react-native';
+import { AppRegistry, Text, View, StyleSheet, Image, TouchableHighlight, TouchableOpacity, Alert, Dimensions, ScrollView, TextInput, Platform, ImageBackground } from 'react-native';
 import Constants from 'expo-constants';
 //import * as Haptics from 'expo-haptics';
 //https://docs.expo.dev/versions/latest/sdk/haptics/
@@ -12,20 +12,21 @@ let cookieHeight = deviceHeight/3;
 
 export default class App extends Component {
     state = {
-        screens: ['none', 'none', 'block', 'none', 'none', 'none', 'none'], // DONT SAVE
-        gambleScreens: ['none', 'none', 'block', 'none'], // DONT SAVE
-        stockScreens: ['block', 'none '],
-        diceGambleNum: 1, // DONT SAVE
-        maxDiceNum: 0, // DONT SAVE
-        numRolled: 0, // DONT SAVE
-        betAmount: "", // DONT SAVE
-        cookiesWonInGamble: "Won: ?", // DONT SAVE
-        cookies: 111111111111110.00,
+        screens: ['block', 'none', 'none', 'none', 'none'], 
+        gambleScreens: ['block', 'none', 'none', 'none'], 
+        stockScreens: ['block', 'none'],
+        saveScreens:['block', 'none', 'none'],
+        diceGambleNum: 1, 
+        maxDiceNum: 0, 
+        numRolled: 0, 
+        betAmount: "", 
+        cookiesWonInGamble: "Won: ?",
+        cookies: 0.00,
         cookieS: '',
-        cookieRot: 0, // DONT SAVE
+        cookieRot: 0,
         clickPower: 1,
         clickPrice: 500,
-        cps: 0.00, //DONT SAVE
+        cps: 0.00, 
         encodedCode: "",
         gambleImages: {
             'https://codehs.com/uploads/e9ab66d0a796ea164363e7e3830e7239': 2,
@@ -44,20 +45,17 @@ export default class App extends Component {
             'stocks',
             'save',
         ],
-        //buildings to click for you
-        //FOR BUILDINGS = 0:COST, 1:AMOUNT, 2:CPS, 3: OG COST
+
         buildings: {
-            'Pointers': [15, 1, 0.1, 15],
-            'Grandmas': [100, 1, 1.0, 100],
-            'Farms': [1100, 1, 8.0, 1100],
-            'Mines': [12000, 1, 47.0, 12000],
-            'Factory': [130000, 1, 260.0, 130000],
-            'Bank': [1400000, 1, 1400, 1400000],
+            'Pointers': [15, 0, 0.1, 15],
+            'Grandmas': [100, 0, 1.0, 100],
+            'Farms': [1100, 0, 8.0, 1100],
+            'Mines': [12000, 0, 47.0, 12000],
+            'Factory': [130000, 0, 260.0, 130000],
+            'Bank': [1400000, 0, 1400, 1400000],
             'Temple': [20000000, 0, 7800, 20000000],
             'Wizard Tower': [330000000, 0, 44000, 330000000]
         },
-        // cps of tower * amount of multi[1]
-        //FOR multi = 0:COST, 1:AMOUNT
         multi: {
             'Pointers': [15*7.5, 1.00],
             'Grandmas': [100*7.5, 1.00],
@@ -68,14 +66,15 @@ export default class App extends Component {
             'Temple': [20000000*7.5, 1.00],
             'Wizard Tower': [330000000*7.5, 1.00]
         },
-        //FOR stocks = 0:COST, 1:OG price,  2:AMOUNT BOUGHT, 3: LIMIT TO BUY AMOUNT, 4: UP TIME OF STOCK, 5: Y CORDS
+        //STOCK INDEX KEY: 0: COST, 1: RESTING AMOUNT,  2: AMOUNT BOUGHT, 3: LIMIT TO BUY AMOUNT, 4: STOCK STATE, 5: STOCK STATE DURATION, 6: DELTA / SLOPE, 7: Y CORDS.
+        // STOCK STATE KEY: 0: STABLE, 1: SLOW CLIMB, 2: SLOW FALL, 3: FAST CLIMB, 4: FAST FALL, 5: CHAOTIC
         stocks: {
-          'Sugar': [10, 10, 0, 1, 1.0, deviceHeight/1.9/2],
-          'Dough': [15, 15, 0, 1, 1.0, deviceHeight/1.9/2],
-          'Chocolate': [25, 25, 1, 0, 1.0, deviceHeight/1.9/2],
-          'Flour': [75, 75, 0, 1, 1.0, deviceHeight/1.9/2],
-          'Coco Powder': [150, 150, 0, 1, 1.0,  deviceHeight/1.9/2],
-        },
+            'Sugar':      [10.0, 10.0, 0, 1, 0, NaN, NaN, deviceHeight/deviceHeight, 'https://codehs.com/uploads/b5ae9ca1b5429a1a4dbd1451a4e6ca5d'],
+            'Dough':      [20.0, 20.0, 0, 1, 0, NaN, NaN, deviceHeight/deviceHeight, 'https://codehs.com/uploads/ef797b689c2445269007ea4e514fc6b4'],
+            'Chocolate':  [30.0, 30.0, 0, 1, 0, NaN, NaN, deviceHeight/deviceHeight, 'https://codehs.com/uploads/e65da26cd08c29d6270310f012274914'],
+            'Flour':      [40.0, 40.0, 0, 1, 0, NaN, NaN, deviceHeight/deviceHeight, 'https://codehs.com/uploads/e325047a58d8e539f095a52a8b50ef06'],
+            'CocoPowder': [50.0, 50.0, 0, 1, 0, NaN, NaN, deviceHeight/deviceHeight, 'https://codehs.com/uploads/53ea62786a7ac75c0664d01d6727f741'],
+          },
         save: '',
         saveString: '',
         savePh: 'Paste your save code here',
@@ -89,7 +88,6 @@ export default class App extends Component {
         }
         screens[index] = 'block';
         this.setState({screens: screens})
-        //if gambling tab, reset gambling info
         if(name == "gambling")
         {
             this.setState({
@@ -112,7 +110,13 @@ export default class App extends Component {
                 stockScreens: ['block', 'none'],
             })
         };
-    }; //Changes Screens
+        if(name == 'save')
+        {
+            this.setState({
+                saveScreens: ['block', 'none', 'none'],
+            })
+        };  
+    }; 
     
     addAllCookies = setInterval(() => {
         var total = 0;
@@ -123,16 +127,12 @@ export default class App extends Component {
         this.setState({ cookies: this.state.cookies + total, cps: total});
     }, 1000 );
     
-    //COOKIE ROTATION
     cookieRotation = setInterval(() => {
-        // sets the rotation of the cookie by change rot every 50 ms by 2 degrees
         this.setState({
             cookieRot: this.state.cookieRot+.25,
         });
-    },50); //this is the interval in milliseconds
-    // BUYING AND INCREASEING PRICES OF THE INCOMING BUILDING
+    },50); 
     increaseCost = (building, amt) => {
-        // see if the player has enough cookies to buy
         if(this.state.cookies >= building[0]){
             var minus = building[0];
             building[1] = Math.floor(amt+1);
@@ -143,7 +143,6 @@ export default class App extends Component {
         };
     };
     increaseMulti = (building, amt) => {
-        // see if the player has enough cookies to buy
         if(this.state.cookies >= building[0]){
             var minus = building[0];
             building[1] = amt*1.05;
@@ -163,17 +162,41 @@ export default class App extends Component {
             });
         };
     };
+    buyStock = (name) => {
+        if(this.state.cookies >= this.state.stocks[name][0] &&  this.state.stocks[name][2] < this.state.stocks[name][3]){
+            this.state.stocks[name][2] = this.state.stocks[name][2] + 1;
+            this.setState({
+                cookies: this.state.cookies - this.state.stocks[name][0],
+            })
+        }
+    }
+    sellStock = (name) => {
+        if(this.state.stocks[name][2] > 0){
+            this.state.stocks[name][2] = this.state.stocks[name][2] - 1;
+            this.setState({
+                cookies: this.state.cookies + this.state.stocks[name][0],
+            })
+        }
+    }
+
     
     plusPressed = () => { 
         if(this.state.diceGambleNum < this.state.maxDiceNum) this.setState({diceGambleNum: this.state.diceGambleNum + 1})
     };
+    bigPlusPressed = () => { 
+        if(this.state.diceGambleNum + 10 < this.state.maxDiceNum) this.setState({diceGambleNum: this.state.diceGambleNum + 10})
+        else(this.setState({diceGambleNum: this.state.maxDiceNum}))
+    };
     minusPressed = () => { 
         if(this.state.diceGambleNum > 1) this.setState({diceGambleNum: this.state.diceGambleNum - 1})
+    };
+    bigMinusPressed = () => { 
+        if(this.state.diceGambleNum - 10 > 1) this.setState({diceGambleNum: this.state.diceGambleNum - 10})
+        else(this.setState({diceGambleNum: 1}))
     };
     
     rollDice = () => {
        this.setState({
-            //this number rolled will show for 50ms only
             numRolled: Math.floor((Math.random() * this.state.maxDiceNum) + 1)
         }); 
     };
@@ -182,7 +205,6 @@ export default class App extends Component {
         if(parseInt(this.state.betAmount) > this.state.cookies) this.setState({betAmount: this.state.cookies});
         if(parseInt(this.state.betAmount) < 0) this.setState({betAmount: 0});
         this.setState({
-            //this number rolled will show for 50ms only
             numRolled: Math.floor((Math.random() * this.state.maxDiceNum) + 1)
         });
         for(let i = 0; i < 5; i++){
@@ -208,15 +230,8 @@ export default class App extends Component {
     }
     
     load = (code) => {
-        
         const base64Regex = /^[a-zA-Z0-9+/]*={0,2}$/;
-        
-        if(!base64Regex.test(code) || code.length < 150) {
-            alert("invalid Code");
-            this.setState({ save: '',});
-            return;
-        }
-        
+
         let decodedCode;
         try {
             decodedCode = atob(code);
@@ -247,29 +262,27 @@ export default class App extends Component {
                 return acc;
             }, {}),
             clickPower: Number(clickPower),
-            clickPrice: Number(clickPrice)
+            clickPrice: Number(clickPrice),
+            save: '',
         });
     }
     encode = () => {
         const { buildings, multi, cookies, clickPower, clickPrice } = this.state;
         const names = Object.keys(buildings);
     
-        // Encode building variables
         const buildVars = names.map(name => Object.values(buildings[name]).join(','));
         const buildingsCode = buildVars.join('|') + '/';
     
-        // Encode multiplier variables
         const multiVars = names.map(name => Object.values(multi[name]).join(','));
         const multipliersCode = multiVars.join('|') + '/';
     
-        // Encode the entire state
         const encoded = btoa(cookies + '/' + buildingsCode + multipliersCode + clickPower + '/' + clickPrice);
         
         this.setState({ encodedCode: encoded });
     }
     
     checkNaN = (value) => {
-        if(value.toString().length <= 0){
+        if(value.toString().length <= 0 || value == 0){
             alert('NaN');
             return true;
         }
@@ -277,400 +290,804 @@ export default class App extends Component {
             return false;
         }
     }
-
+    generateValueNaN = () => {
+        
+    }
+    
+    moveStock = setInterval(() => {
+        const { stocks, buildings } = this.state;
+        const stockNames = Object.keys(stocks);
+        const buildingNames = Object.keys(buildings);
+        
+        const screenBottom = (Number)(deviceHeight/2);
+        const screenTop = (Number)(deviceHeight/deviceHeight);
+        const range = (Number)(screenBottom - screenTop);
+        var marketCap = (Number)(100 + (3 * (buildings[buildingNames[5]][1] - 1)));
+        for(let i=0; i<stockNames.length; i++){
+            const percent = stocks[stockNames[i]][0] / marketCap;
+            const position = screenBottom * percent;
+            stocks[stockNames[i]][7] = screenBottom - position;
+        }
+        
+    }, 500);
     stockChanges = setInterval(() => {
         const { stocks, buildings } = this.state;
         const stockNames = Object.keys(stocks);
         const buildingNames = Object.keys(buildings);
-        var stockChangeAmount = 0;
-        for(let i = 0; i < stockNames.length; i++) {
-            stocks[stockNames[i]][3] = buildings[buildingNames[i]][1]
-            var randomNumberBatch = Math.ceil(25 / (stocks[stockNames[i]][4] / 5));
+        var restingValue = 0;
+        
+        for(let i=0; i<stockNames.length; i++){
+            stocks[stockNames[i]][3] = Math.floor(buildings[buildingNames[i]][1] * buildings[buildingNames[i]][2]);
+
+            restingValue = 10 * (i+1) + (Number)(buildings[buildingNames[5]][1]) - 1;
+            stocks[stockNames[i]][1] = restingValue;
             
-            if(randomNumberBatch < 5) {
-                randomNumberBatch = 5;
+            var value = (Number)(stocks[stockNames[i]][0]);
+            value += (restingValue - value) * 0.01;
+            value += (this.generateRandomNumber(-3, 3));
+
+            var delta = (Number)(stocks[stockNames[i]][6]);
+            if(isNaN(delta)){
+                delta = this.generateRandomNumber(-0.05, 0.05);
+                if(delta == 0) delta += -0.01;
             }
-            else if(randomNumberBatch > 100){
-                randomNumberBatch = 100;
+            delta += (delta * 0.03);
+
+            if(Math.floor(this.generateRandomNumber(1, 100)) <= 10){
+                delta += this.generateRandomNumber(-0.15, 0.15);
+                value += delta;
+            } 
+            if(Math.floor(this.generateRandomNumber(1, 100)) <= 15) value += this.generateRandomNumber(-1.5, 1.5);
+            if(Math.floor(this.generateRandomNumber(1, 100)) <= 3) value += this.generateRandomNumber(-5, 5);
+
+            var state = (Number)(stocks[stockNames[i]][4]);
+            if(isNaN(state)){
+                state = Math.floor(this.generateRandomNumber(0, 5));
+            } 
+            
+            var stateDuration = (Number)(stocks[stockNames[i]][5]);
+            if(isNaN(stateDuration)){
+                stateDuration = Math.floor(this.generateRandomNumber(5, 15));
+            } 
+            stateDuration -= 1;
+            
+            if(stateDuration === NaN || stateDuration <= 0 || Math.floor(this.generateRandomNumber(1, 100)) <= 10){
+                var changeState = this.generateRandomNumber(1, 100);
+
+                if(state == 3 || state == 4){
+                    if(Math.floor(this.generateRandomNumber(1, 100)) <= 70)
+                        state = 5
+                }
+
+                if(changeState <= 12.5) state = 0;
+                else if(changeState > 12.5 && changeState <= 37.5) state = 1;
+                else if(changeState > 37.5 && changeState <= 62.5) state = 2;
+                else if(changeState > 62.5 && changeState <= 75){
+                    state = 3;
+                } 
+                else if(changeState > 75 && changeState <= 87.5){
+                    state = 4;
+                }
+                else if(changeState > 87.5) state = 5;
+
+                stateDuration = Math.floor(this.generateRandomNumber(5, 15));
             }
 
-            for(let i = 0; i < randomNumberBatch; i++)
-                stockChangeAmount += Math.ceil(Math.random() * 100)
+            if(state == 0){
+                delta -= (delta * 0.05);
+                delta += this.generateRandomNumber(-0.02, 0.02);
+            }
+            else if(state == 1){
+                delta -= (delta * 0.01);
+                delta += this.generateRandomNumber(-0.04, 0.05);
+            }
+            else if(state == 2){
+                delta -= (delta * 0.01);
+                delta += this.generateRandomNumber(-0.04, 0.01);
+            }
+            else if(state == 3){
+                value += this.generateRandomNumber(0, 5);
+                delta += this.generateRandomNumber(-0.01, 0.14);
+                if(this.generateRandomNumber(1, 100) <= 30){
+                    value += this.generateRandomNumber(-3, 7);
+                    delta += this.generateRandomNumber(-0.05, 0.05);
+                }
+                if(this.generateRandomNumber(1, 100) <= 3) state = 4;
+            }
+            else if(state == 4){
+                value += this.generateRandomNumber(-5, 0);
+                delta += this.generateRandomNumber(-0.14, 0.1);
+                if(this.generateRandomNumber(1, 100) <= 30){
+                    value += this.generateRandomNumber(-3, 7);
+                    delta += this.generateRandomNumber(-0.05, 0.05);
+                }
+            }
+            else if(state == 5){
+                delta += this.generateRandomNumber(-0.15, 0.15);
+                if(this.generateRandomNumber(1, 100) <= 50){
+                    value += this.generateRandomNumber(-5, 5);
+                }
+                if(this.generateRandomNumber(1, 100) <= 20){
+                    delta = this.generateRandomNumber(-1, 1);
+                }
+            }
+            var marketCap = (Number)(100 + (3 * (buildings[buildingNames[5]][1] - 1)));
+            if( value > marketCap){
+                value = marketCap;
+            }
+            else if(value < 1){
+                value = 1;
+            }
             
-        stockChangeAmount /= randomNumberBatch;
-        stockChangeAmount *= 0.1;
-        stocks[stockNames[i]][0] *= stockChangeAmount;
+            stocks[stockNames[i]][0] = (Number)(value.toFixed(2));
+            stocks[stockNames[i]][4] = (Number)(state.toFixed(2));
+            stocks[stockNames[i]][5] = (Number)(stateDuration.toFixed(2));
+            stocks[stockNames[i]][6] = (Number)(delta.toFixed(2));
         }
-    }, 7000);
+        
+    }, 5000);
+    
+    generateRandomNumber = (min, max) => {
+        var rValue = (Number)((min + Math.random()*(max - min)).toFixed(2));
+        return rValue;
+    }
     
 
     render() {
-        return (
-            <View style={styles.container}>
-                <View style={{ display: this.state.stockScreens[0]}}>
-                    <View style={styles.cookieC}> 
-                    
-                    {/* amount of cookies you have current*/}
-                            <Text style={styles.cpsText}> 
-                                {this.state.cookies.toFixed(1) + " Cookies"} 
-                            </Text>
-                            {/* Cookie to click on and adds yout current click power's amount to total cookies */}
-                            <TouchableOpacity style={{ borderRadius: (screenHeight/5.5), background: 'grey' }}
-                                onPress={() => {
-                                    this.setState({cookies: this.state.cookies+this.state.clickPower})
-                                }}
-                                activeOpacity={.8}
-                            >
-                            {/* cookie spin */}
-                                <View style={{transform: [{rotate: this.state.cookieRot + 'deg'}], }}>
-                                {/* cookie's image */}
-                                    <Image
-                                        source={{ uri: 'https://codehs.com/uploads/6529cb528ca6905cfd4fd79a5f5bce9a' }}
-                                        style={{ height: screenWidth/5.5, width: screenWidth/5.5, alignSelf: 'center' }}
-                                    />
-                                </View>
-                            </TouchableOpacity>
-                            {/* total amount all your buildings are clicking for you per second */}
-                            <Text style={styles.cookieText}> {this.state.cps.toFixed(1)} {' '} per/sec </Text>
-                    </View>
-                </View>
-                
-                <View style={{ display: this.state.stockScreens[1]}}>
-                    <View style={styles.stockC}>
-                        <View style={{
-                            width: 25,
-                            height: 25,
-                            backgroundColor: 'green',
-                            position: 'absolute',
-                            transform: [{ translateY: this.state.stocks['Sugar'][3] }]
-                        }}>
-                        
-                        </View>
-                    </View>
-                </View>
-                
-                <ScrollView horizontal={true} style={styles.tabsC}>
-                {/* tabs to go to different screens */}
-                    {this.state.tabs.map((name) => (
-                        <TouchableOpacity style={styles.tabs}
-                            onPress={() => {
-                                this.changeScreen(this.state.tabs.indexOf(name), this.state.screens, name, );
-                            }}
-                        >   
-                            <Text> {name} </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-               
-                <View style={{ display: this.state.screens[0] }}> {/* where you buy all the different buildings with changing amounts */}
-                {
-                    <ScrollView style={styles.upgradeC}>
-                        {Object.entries(this.state.buildings).map(([k,v]) => (
-                            <View style={styles.buildingBar}>
-                                <Text style={styles.towerText}>
-                                    {k} - {' ' + v[1].toString()}
+        if(Platform.OS === 'web') {
+            return (
+                <View style={styles.container}>
+                    <View style={{ display: this.state.stockScreens[0]}}>
+                        <View style={styles.cookieC}> 
+                                <Text style={styles.cpsText}> 
+                                    {this.state.cookies.toFixed(1) + " Cookies"} 
                                 </Text>
-                                <TouchableOpacity style={styles.buyButton}
+                                
+                                <TouchableOpacity style={{ borderRadius: (screenHeight/5.5), background: 'grey' }}
                                     onPress={() => {
-                                        this.increaseCost(this.state.buildings[k], this.state.buildings[k][1],);
+                                        this.setState({cookies: this.state.cookies+this.state.clickPower})
                                     }}
+                                    activeOpacity={.8}
                                 >
-                                    <Text> {v[0]} </Text>
+                                
+                                    <View style={{transform: [{rotate: this.state.cookieRot + 'deg'}], }}>
+                                    
+                                        <Image
+                                            source={{ uri: 'https://codehs.com/uploads/6529cb528ca6905cfd4fd79a5f5bce9a' }}
+                                            style={{ height: screenWidth/5.5, width: screenWidth/5.5, alignSelf: 'center' }}
+                                        />
+                                    </View>
                                 </TouchableOpacity>
-                            </View>
-                        ))}
-                   </ScrollView>
-                }
-                </View>
-                
-                <View style={{ display: this.state.screens[1] }}>
-                {
-                    <ScrollView style={styles.upgradeC}>
-                        <View style={styles.buildingBar}>
-                            <Text style={styles.towerText}>Click Power - {this.state.clickPower} </Text>
-                            <TouchableOpacity style={styles.buyButton}
-                                onPress={() => {
-                                   this.increaseClick();
-                                }}
-                            >
-                                <Text> {this.state.clickPrice} </Text>
-                            </TouchableOpacity>
+                                
+                                <Text style={styles.cookieText}> {this.state.cps.toFixed(1)} {' '} per/sec </Text>
                         </View>
-                    {/* buy multiplication to buildings */}
-                        {Object.entries(this.state.buildings).map(([k,v]) => (
-                            <View style={styles.buildingBar}>
-                                <Text style={styles.towerText}>
-                                    {k} - x{this.state.multi[k][1].toFixed(2)}
-                                </Text>
-                                <TouchableOpacity style={styles.buyButton}
-                                    onPress={() => {
-                                        this.increaseMulti(this.state.multi[k], this.state.multi[k][1],);
+                    </View>
+                    
+                    <View style={{ display: this.state.stockScreens[1]}}>
+                        <ImageBackground style={styles.stockC}
+                            source={{ uri: 'https://codehs.com/uploads/c9ec4f8478d93ecb8113550642d1f8c7' }}
+                            
+                        >
+                        {Object.entries(this.state.stocks).map(([k,v]) => (
+                            <Image
+                                source={{ uri: v[8] }}
+                                style={{
+                                    width: screenWidth/30,
+                                    height: screenWidth/30,
+                                    position: 'absolute',
+                                    transform: [{ translateY: v[7] }]
                                 }}>
-                                    <Text> {this.state.multi[k][0]} </Text>
-                                </TouchableOpacity>
-                            </View>
+                            </Image>
+                        ))}
+                        </ImageBackground>
+                    </View>
+                    
+                    <ScrollView horizontal={true} style={styles.tabsC}>
+                        {this.state.tabs.map((name) => (
+                            <TouchableOpacity style={styles.tabs}
+                                onPress={() => {
+                                    this.changeScreen(this.state.tabs.indexOf(name), this.state.screens, name, );
+                                }}
+                            >   
+                                <Text> {name} </Text>
+                            </TouchableOpacity>
                         ))}
                     </ScrollView>
-                }
-                </View>
-                
-                <View style = {{display: this.state.screens[2] }}> {/*DO NOT TOUCH STYLING WITHOUT A BACKUP, THINGS ARE A BIT WHACKY AND PARTICULAR*/}
-                { 
-                    <View style = {styles.upgradeC}>
-                        <View style={{background: 'green', height: cookieHeight}}>    
-                            {
-                                
-                                <View style = {{display: this.state.gambleScreens[0] }}>
-                                    <View style={{justifyContent: 'space-evenly', alignItems: "center", height: cookieHeight}}>
-                                        <View style={styles.gambleInput}>
-                                            <TextInput
-                                                placeholder={'Enter bet amount here'}
-                                                onChangeText={(betAmount) => this.setState({betAmount})}
-                                                value={this.state.betAmount}
-                                                keyboardType='numeric'
-                                            />
-                                        </View>
-                                    
-                                        <TouchableHighlight style={styles.enterButton}
-                                                onPress={() => {
-                                                    if(!this.checkNaN(this.state.betAmount)){
-                                                        this.setState({gambleScreens: ["none", "block", "none", "none"],})
-                                                    }
-                                                }}
-                                            >
-                                            <Text style={styles.gambleText}> Continue </Text>
-                                        </TouchableHighlight>
-                                    </View>
-                                </View>
-                            } {/*Insert Bet Amount Screen*/}
-                            {
-                            <View style = {{display: this.state.gambleScreens[1] }}>
-                                <View style={{}}>
-                                    <Text style = {styles.gambleText}> Select Dice </Text> 
-                                    { <View>
-                                        <View style={styles.rowContainer}>
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 2}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/e9ab66d0a796ea164363e7e3830e7239' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}
-                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                            
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 4}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/f2b51d987924500632b6d17b52fea0ee' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}
-                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                            
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 6}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/3a347f2d33efd9d497f601c800f0c83e' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                            
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 8}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/5fd52273379e5f598a79ed9ffb4acdc5' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                        </View>
-                                        
-                                        <View style={styles.rowContainer}>
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 10}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/7627dcfd38370770b273d947e4c6bf2d' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                            
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 12}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/c596cad96509fb446fd417a6e2179091' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                            
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 20}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/4ea8cafa629229f5a97886925924033e' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                            
-                                            <View style = {styles.imageContainer}>
-                                                <TouchableHighlight 
-                                                    underlayColor = "clear"
-                                                    onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: 100}) }}
-                                                >
-                                                    <Image
-                                                    source={{ uri: 'https://codehs.com/uploads/3cb71656381b30606f50f37ec63ead60' }}
-                                                    style={{ height: screenHeight/15, width: screenWidth / 20, resizeMode: 'contain'}}                                                    />
-                                                </TouchableHighlight>
-                                            </View>
-                                        </View>
-                                     </View> } {/*Dice Buttons*/}
-                                </View>
-                            </View>
-                            } {/*Dice Select Screen*/}
-                            {
-                            <View style = {{display: this.state.gambleScreens[2] }}>
-                               <View style={{ alignItems: "center",height: cookieHeight,}}>
-                                    <Text style = {styles.smallGambleText}> Select Number To Bet On </Text>
-                                    <View style={styles.rowContainer}>
-                                        <TouchableHighlight 
-                                                underlayColor = "clear"
-                                                onPressOut={() => { this.minusPressed(); }}
-                                            >
-                                            <Text style={styles.bigText}>-</Text>
-                                        </TouchableHighlight>
-                                        <Text style = {styles.bigText}> {this.state.diceGambleNum} </Text>
-                                        <TouchableHighlight 
-                                                underlayColor = "clear"
-                                                onPressOut={() => { this.plusPressed(); }}
-                                            >
-                                            <Text style={styles.bigText}>+</Text>
-                                        </TouchableHighlight>
-                                    </View>
-                                    <TouchableHighlight style={styles.enterButton}
-                                            onPress={() => { 
-                                                this.rollDiceMultipleTimes();
+    
+                   <View style={{height: cookieHeight}}>
+                        <View style={{ display: this.state.screens[0] }}>
+                        {
+                            <ScrollView style={styles.upgradeC}>
+                                {Object.entries(this.state.buildings).map(([k,v]) => (
+                                    <View style={styles.buildingBar}>
+                                        <Text style={styles.towerText}>
+                                            {k} - {' ' + v[1].toString()}
+                                        </Text>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.increaseCost(this.state.buildings[k], this.state.buildings[k][1],);
                                             }}
                                         >
-                                        <Text style={styles.gambleText}> Continue </Text>
-                                    </TouchableHighlight>
-                                </View>
-                            </View>
-                            } {/*Number Select Screen*/}
-                            {
-                                <View style = {{display: this.state.gambleScreens[3] }}>
-                                    <View style={{justifyContent: 'center', alignItems: "center"}}>
-                                        <Text style={{marginHorizontal: deviceWidth/14.9, marginVertical: deviceHeight/26.6, fontSize: deviceWidth/14.9, color: "white"}}> Cookies Bet: {this.state.betAmount} </Text>
-                                        <Text style={styles.bigText}> {this.state.numRolled} </Text>
-                                        <Text style={{marginHorizontal: deviceWidth/14.9, marginVertical: deviceHeight/26.6, fontSize: deviceWidth/14.9, color: "white"}}> Cookies {this.state.cookiesWonInGamble} </Text>
+                                            <Text> {v[0]} </Text>
+                                        </TouchableOpacity>
                                     </View>
-                                </View>
-                            } {/*Rolling / Payout Screen*/}
-                        </View>
-                    </View>
-                }
-                </View>
-                
-                
-                <View style={{ display: this.state.screens[3]}}>
-                {
-                    <ScrollView style={styles.upgradeC}>
-                        {Object.entries(this.state.stocks).map(([k,v]) => (
-                            <View style={styles.buildingBar}>
-                                <Text style={styles.towerText}>
-                                    {k} - {' ' + v[1].toString()}
-                                </Text>
-                                <TouchableOpacity style={styles.buyButton}
-                                    onPress={() => {
-                                        alert('Clicked ' + k)
-                                    }}
-                                >
-                                    <Text> {v[0]} </Text>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                    </ScrollView>
-                }
-                </View>
-                
-                <View style={{ display: this.state.screens[4]}}>
-                {
-                    <View style={styles.upgradeC}>
-                        <View style={{background: 'green', flex: 1, justifyContent: 'center', flexDirection: 'row'}}>
-                            <TouchableOpacity style={styles.saveButton}
-                                onPress={() => {
-                                this.encode();
-                                this.changeScreen(5, this.state.screens);
-                            }}>
-                                <Text> Save </Text>
-                            </TouchableOpacity>
-                            
-                            <TouchableOpacity style={styles.saveButton}
-                                onPress={() => {
-                                    this.changeScreen(6, this.state.screens);
-                            }}>
-                                <Text> Load </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                }
-                </View>
-                {/* Save Screen ends here*/}
-                <View style={{display: this.state.screens[5]}}>
-                {
-                    <View style={styles.upgradeC}>
-                        <View style={{background: 'green', flex: 1, justifyContent: 'center'}}>
-                            <Text style={styles.gambleText} selectable={false}> Your code is </Text>
-                            <Text style={styles.smallText}>
-                            {this.state.encodedCode}
-                            </Text>
-                        </View>
-                    </View>
-                }
-                </View>
-                
-                <View style={{display: this.state.screens[6]}}>
-                {
-                    <View style={styles.upgradeC}>
-                        <View style={{background: 'green', flex: 1, justifyContent: 'center'}}>
-                            <View style={{width: deviceWidth/1.2, paddingHorizontal: deviceWidth/14.9, paddingVertical: deviceHeight/26.6, alignSelf: 'center', background: 'white', borderRadius: deviceWidth/59.6}}>
-                            <TextInput 
-                                placeholder={this.state.savePh}
-                                onChangeText={(save) => this.setState({save})}
-                                value={this.state.save}
-                            />
-                            </View>
-                            <TouchableOpacity style={styles.saveButton}
-                                onPress={() => {
-                                this.load(this.state.save);
-                                this.changeScreen(0,this.state.screens);
-                            }}>
-                                <Text> Load </Text>
-                            </TouchableOpacity>
+                                ))}
+                        </ScrollView>
+                        }
                         </View>
                         
+                        <View style={{ display: this.state.screens[1] }}>
+                        {
+                            <ScrollView style={styles.upgradeC}>
+                                <View style={styles.buildingBar}>
+                                    <Text style={styles.towerText}>Click Power - {this.state.clickPower} </Text>
+                                    <TouchableOpacity style={styles.buyButton}
+                                        onPress={() => {
+                                        this.increaseClick();
+                                        }}
+                                    >
+                                        <Text> {this.state.clickPrice} </Text>
+                                    </TouchableOpacity>
+                                </View>
+                                {Object.entries(this.state.buildings).map(([k,v]) => (
+                                    <View style={styles.buildingBar}>
+                                        <Text style={styles.towerText}>
+                                            {k} - x{this.state.multi[k][1].toFixed(2)}
+                                        </Text>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.increaseMulti(this.state.multi[k], this.state.multi[k][1],);
+                                        }}>
+                                            <Text> {this.state.multi[k][0]} </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        }
+                        </View>
+                        
+                        <View style = {{display: this.state.screens[2] }}> 
+                        { 
+                            <View style = {styles.upgradeC}>
+                                <View style={{background: 'green', height: cookieHeight}}>    
+                                    
+                                    <View style = {{display: this.state.gambleScreens[0] }}>
+                                        <View style={{justifyContent: 'space-evenly', alignItems: "center", height: cookieHeight}}>
+                                            <View style={styles.gambleInput}>
+                                                <TextInput
+                                                    placeholder={'Enter bet amount here'}
+                                                    onChangeText={(betAmount) => this.setState({betAmount})}
+                                                    value={this.state.betAmount}
+                                                    keyboardType='numeric'
+                                                />
+                                            </View>
+                                        
+                                            <TouchableHighlight style={styles.enterButton}
+                                                    onPress={() => {
+                                                        if(!this.checkNaN(this.state.betAmount)){
+                                                            this.setState({gambleScreens: ["none", "block", "none", "none"],})
+                                                        }
+                                                    }}
+                                                >
+                                                <Text style={styles.gambleText}> Continue </Text>
+                                            </TouchableHighlight>
+                                        </View>
+                                    </View>
+                                    
+                                    {
+                                    <View style = {{display: this.state.gambleScreens[1] }}>
+                                            <Text style = {styles.gambleText}> Select Dice </Text> 
+                                            <View style={styles.rowContainer}>
+                                            {Object.entries(this.state.gambleImages).map(([k,v]) => (
+                                                    <View style = {styles.imageContainer}>
+                                                        <TouchableHighlight
+                                                            underlayColor={'clear'}
+                                                            onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: v}) }}
+                                                        >
+                                                            <Image
+                                                            source={{ uri: k }}
+                                                            style={{ height: deviceHeight/5, width: deviceWidth / 10, resizeMode: 'contain'}}
+                                                            />
+                                                        </TouchableHighlight>
+                                                    </View>
+                                            ))}
+                                                
+                                                
+                                            </View> 
+                                    </View>
+                                    } 
+    
+                                    {
+                                    <View style = {{display: this.state.gambleScreens[2] }}>
+                                    <View style={{ alignItems: "center",height: cookieHeight}}>
+                                            <Text style = {styles.smallGambleText}> Select Number To Bet On </Text>
+                                            <View style={styles.rowContainer}>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => {this.bigMinusPressed(); }}
+                                                    >
+                                                    <Text style={styles.biggerText}>-</Text>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => { this.minusPressed(); }}
+                                                    >
+                                                    <Text style={styles.bigText}>-</Text>
+                                                </TouchableHighlight>
+                                                <Text style = {styles.bigText}> {this.state.diceGambleNum} </Text>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => { this.plusPressed(); }}
+                                                    >
+                                                    <Text style={styles.bigText}>+</Text>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => { this.bigPlusPressed(); }}
+                                                    >
+                                                    <Text style={styles.biggerText}>+</Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                            <TouchableHighlight style={styles.enterButton}
+                                                    onPress={() => { 
+                                                        this.rollDiceMultipleTimes();
+                                                    }}
+                                                >
+                                                <Text style={styles.gambleText}> Continue </Text>
+                                            </TouchableHighlight>
+                                        </View>
+                                    </View>
+                                    } 
+                                    {
+                                        <View style = {{display: this.state.gambleScreens[3] }}>
+                                            <View style={{ alignItems: "center", height: cookieHeight}}>
+                                                <Text style={{fontSize: deviceHeight/20, color: "white"}}> Cookies Bet: {this.state.betAmount} </Text>
+                                                <Text style={styles.bigText}> {this.state.numRolled} </Text>
+                                                <Text style={{fontSize: deviceHeight/20, color: "white"}}> Cookies {this.state.cookiesWonInGamble} </Text>
+                                                <TouchableHighlight style={styles.enterButton}
+                                                    onPress={() => {
+                                                        this.setState({gambleScreens: ['block', 'none', 'none', 'none'], betAmount: '', cookiesWonInGamble: 'Won ?', diceGambleNum: 1,})
+                                                    }}
+                                                    >
+                                                    <Text style={styles.gambleText}> Play Again </Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                        </View>
+                                    } 
+                                </View>
+                            </View>
+                        }
+                        </View>
+                        
+                        
+                        <View style={{ display: this.state.screens[3]}}>
+                        {
+                            <ScrollView style={styles.upgradeC}>
+                                {Object.entries(this.state.stocks).map(([k,v]) => (
+                                    <View style={styles.buildingBar}>
+                                        <Text style={styles.towerText}>
+                                            {k}  {v[2].toString() + '/' + v[3].toString()}
+                                        </Text>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.sellStock(k.toString());
+                                            }}
+                                        >
+                                            <Text> Sell </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.buyStock(k.toString());
+                                            }}
+                                        >
+                                            <Text> {v[0]} </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        }
+                        </View>
+                        
+                        <View style={{ display: this.state.screens[4]}}>
+                        {
+                            <View style={{display: this.state.saveScreens[0]}}>
+                                <View style={styles.upgradeC}>
+                                    <View style={{background: 'green', height: cookieHeight, width: deviceWidth, flex: 1,justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row'}}>
+                                        <TouchableOpacity style={styles.saveButton}
+                                            onPress={() => {
+                                                if (Platform.OS === 'web'){
+                                                    this.encode();
+                                                    this.setState({saveScreens: ['none', 'block', 'none'],})
+                                                }
+                                                else 
+                                                    alert('no save for phone');
+                                        }}>
+                                            <Text style={{fontSize: 20}}> Save </Text>
+                                        </TouchableOpacity>
+                                        
+                                        <TouchableOpacity style={styles.saveButton}
+                                            onPress={() => {
+                                                if (Platform.OS === 'web')
+                                                    this.setState({saveScreens: ['none', 'none', 'block'],})
+                                                else 
+                                                    alert('no save for phone');    
+                                        }}>
+                                            <Text style={{fontSize: 20}}> Load </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                            }
+                        
+                            {/* Save Screen ends here*/}
+                            <View style={{display: this.state.saveScreens[1]}}>
+                            {
+                                <View style={styles.upgradeC}>
+                                    <View style={{background: 'green', flex: 1, justifyContent: 'center'}}>
+                                        <Text style={styles.gambleText} selectable={false}> Your code is </Text>
+                                        <ScrollView style={{width: deviceWidth/1.2, alignSelf: 'center'}}>
+                                            <Text style={{fontSize: deviceHeight/50, color: 'white'}}> {this.state.encodedCode} </Text>
+                                        </ScrollView>
+                                    </View>
+                                </View>
+                            }
+                            </View>
+                            
+                            <View style={{display: this.state.saveScreens[2]}}>
+                            {
+                                <View style={styles.upgradeC}>
+                                    <View style={{background: 'green', flex: 1, justifyContent: 'space-evenly'}}>
+                                        <View style={{width: deviceWidth/1.2, paddingHorizontal: deviceWidth/14.9, paddingVertical: deviceHeight/26.6, alignSelf: 'center', background: 'white', borderRadius: deviceWidth/59.6}}>
+                                        <TextInput 
+                                            placeholder={this.state.savePh}
+                                            onChangeText={(save) => this.setState({save})}
+                                            value={this.state.save}
+                                        />
+                                        </View>
+                                        <TouchableOpacity style={styles.saveButton}
+                                            onPress={() => {
+                                            this.load(this.state.save);
+                                            this.changeScreen(0,this.state.screens);
+                                        }}>
+                                            <Text> Load </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    
+                                </View>
+                            }
+                            </View>
+                        </View>
                     </View>
-                }
                 </View>
-            </View>
-        );
+            );
+        }
+        else {
+            return (
+                <View style={styles.container}>
+                    <View style={{ display: this.state.stockScreens[0]}}>
+                        <View style={styles.cookieC}> 
+                                <Text style={styles.cpsText}> 
+                                    {this.state.cookies.toFixed(1) + " Cookies"} 
+                                </Text>
+                                
+                                <TouchableOpacity style={{ borderRadius: (screenHeight/5.5), background: 'grey' }}
+                                    onPress={() => {
+                                        this.setState({cookies: this.state.cookies+this.state.clickPower})
+                                    }}
+                                    activeOpacity={.8}
+                                >
+                                
+                                    <View style={{transform: [{rotate: this.state.cookieRot + 'deg'}], }}>
+                                    
+                                        <Image
+                                            source={{ uri: 'https://codehs.com/uploads/6529cb528ca6905cfd4fd79a5f5bce9a' }}
+                                            style={{ height: screenWidth/5.5, width: screenWidth/5.5, alignSelf: 'center' }}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                                
+                                <Text style={styles.cookieText}> {this.state.cps.toFixed(1)} {' '} per/sec </Text>
+                        </View>
+                    </View>
+                    
+                    <View style={{ display: this.state.stockScreens[1]}}>
+                        <ImageBackground style={styles.stockC}
+                            source={{ uri: 'https://codehs.com/uploads/c9ec4f8478d93ecb8113550642d1f8c7' }}
+                            
+                        >
+                        {Object.entries(this.state.stocks).map(([k,v]) => (
+                            <Image
+                                source={{ uri: v[8] }}
+                                style={{
+                                    width: screenWidth/20,
+                                    height: screenWidth/20,
+                                    position: 'absolute',
+                                    transform: [{ translateY: v[7] }]
+                                }}>
+                            </Image>
+                        ))}
+                        </ImageBackground>
+                    </View>
+                    
+                    <ScrollView horizontal={true} style={styles.tabsC}>
+                        {this.state.tabs.map((name) => (
+                            <TouchableOpacity style={styles.tabs}
+                                onPress={() => {
+                                    this.changeScreen(this.state.tabs.indexOf(name), this.state.screens, name, );
+                                }}
+                            >   
+                                <Text> {name} </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+    
+                   <View style={{height: cookieHeight}}>
+                        <View style={{ display: this.state.screens[0] }}>
+                        {
+                            <ScrollView style={styles.upgradeC}>
+                                {Object.entries(this.state.buildings).map(([k,v]) => (
+                                    <View style={styles.buildingBar}>
+                                        <Text style={styles.towerText}>
+                                            {k} - {' ' + v[1].toString()}
+                                        </Text>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.increaseCost(this.state.buildings[k], this.state.buildings[k][1],);
+                                            }}
+                                        >
+                                            <Text> {v[0]} </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                        </ScrollView>
+                        }
+                        </View>
+                        
+                        <View style={{ display: this.state.screens[1] }}>
+                        {
+                            <ScrollView style={styles.upgradeC}>
+                                <View style={styles.buildingBar}>
+                                    <Text style={styles.towerText}>Click Power - {this.state.clickPower} </Text>
+                                    <TouchableOpacity style={styles.buyButton}
+                                        onPress={() => {
+                                        this.increaseClick();
+                                        }}
+                                    >
+                                        <Text> {this.state.clickPrice} </Text>
+                                    </TouchableOpacity>
+                                </View>
+                                {Object.entries(this.state.buildings).map(([k,v]) => (
+                                    <View style={styles.buildingBar}>
+                                        <Text style={styles.towerText}>
+                                            {k} - x{this.state.multi[k][1].toFixed(2)}
+                                        </Text>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.increaseMulti(this.state.multi[k], this.state.multi[k][1],);
+                                        }}>
+                                            <Text> {this.state.multi[k][0]} </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        }
+                        </View>
+                        
+                        <View style = {{display: this.state.screens[2] }}> 
+                        { 
+                            <View style = {styles.upgradeC}>
+                                <View style={{background: 'green', height: cookieHeight}}>    
+                                    
+                                    <View style = {{display: this.state.gambleScreens[0] }}>
+                                        <View style={{justifyContent: 'space-evenly', alignItems: "center", height: cookieHeight}}>
+                                            <View style={styles.gambleInput}>
+                                                <TextInput
+                                                    placeholder={'Enter bet amount here'}
+                                                    onChangeText={(betAmount) => this.setState({betAmount})}
+                                                    value={this.state.betAmount}
+                                                    keyboardType='numeric'
+                                                />
+                                            </View>
+                                        
+                                            <TouchableHighlight style={styles.enterButton}
+                                                    onPress={() => {
+                                                        if(!this.checkNaN(this.state.betAmount)){
+                                                            this.setState({gambleScreens: ["none", "block", "none", "none"],})
+                                                        }
+                                                    }}
+                                                >
+                                                <Text style={styles.gambleText}> Continue </Text>
+                                            </TouchableHighlight>
+                                        </View>
+                                    </View>
+                                    
+                                    {
+                                    <View style = {{display: this.state.gambleScreens[1] }}>
+                                            <Text style = {styles.gambleText}> Select Dice </Text> 
+                                            <View style={styles.rowContainer}>
+                                            {Object.entries(this.state.gambleImages).map(([k,v]) => (
+                                                    <View style = {styles.imageContainer}>
+                                                        <TouchableHighlight
+                                                            underlayColor={'clear'}
+                                                            onPress={() => { this.setState({gambleScreens: ["none", "none", "block", "none"], maxDiceNum: v}) }}
+                                                        >
+                                                            <Image
+                                                            source={{ uri: k }}
+                                                            style={{ height: deviceHeight/5, width: deviceWidth / 10, resizeMode: 'contain'}}
+                                                            />
+                                                        </TouchableHighlight>
+                                                    </View>
+                                            ))}
+                                                
+                                                
+                                            </View> 
+                                    </View>
+                                    } 
+    
+                                    {
+                                    <View style = {{display: this.state.gambleScreens[2] }}>
+                                    <View style={{ alignItems: "center",height: cookieHeight}}>
+                                            <Text style = {styles.smallGambleText}> Select Number To Bet On </Text>
+                                            <View style={styles.rowContainer}>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => {this.bigMinusPressed(); }}
+                                                    >
+                                                    <Text style={styles.biggerText}>-</Text>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => { this.minusPressed(); }}
+                                                    >
+                                                    <Text style={styles.bigText}>-</Text>
+                                                </TouchableHighlight>
+                                                <Text style = {styles.bigText}> {this.state.diceGambleNum} </Text>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => { this.plusPressed(); }}
+                                                    >
+                                                    <Text style={styles.bigText}>+</Text>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight 
+                                                        underlayColor = "clear"
+                                                        onPressOut={() => { this.bigPlusPressed(); }}
+                                                    >
+                                                    <Text style={styles.biggerText}>+</Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                            <TouchableHighlight style={styles.enterButton}
+                                                    onPress={() => { 
+                                                        this.rollDiceMultipleTimes();
+                                                    }}
+                                                >
+                                                <Text style={styles.gambleText}> Continue </Text>
+                                            </TouchableHighlight>
+                                        </View>
+                                    </View>
+                                    } 
+                                    {
+                                        <View style = {{display: this.state.gambleScreens[3] }}>
+                                            <View style={{ alignItems: "center", height: cookieHeight}}>
+                                                <Text style={{fontSize: deviceHeight/20, color: "white"}}> Cookies Bet: {this.state.betAmount} </Text>
+                                                <Text style={styles.bigText}> {this.state.numRolled} </Text>
+                                                <Text style={{fontSize: deviceHeight/20, color: "white"}}> Cookies {this.state.cookiesWonInGamble} </Text>
+                                                <TouchableHighlight style={styles.enterButton}
+                                                    onPress={() => {
+                                                        this.setState({gambleScreens: ['block', 'none', 'none', 'none'], betAmount: '', cookiesWonInGamble: 'Won ?', diceGambleNum: 1,})
+                                                    }}
+                                                    >
+                                                    <Text style={styles.gambleText}> Play Again </Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                        </View>
+                                    } 
+                                </View>
+                            </View>
+                        }
+                        </View>
+                        
+                        
+                        <View style={{ display: this.state.screens[3]}}>
+                        {
+                            <ScrollView style={styles.upgradeC}>
+                                {Object.entries(this.state.stocks).map(([k,v]) => (
+                                    <View style={styles.buildingBar}>
+                                        <Text style={styles.towerText}>
+                                            {k}  {v[2].toString() + '/' + v[3].toString()}
+                                        </Text>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.sellStock(k.toString());
+                                            }}
+                                        >
+                                            <Text> Sell </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.buyButton}
+                                            onPress={() => {
+                                                this.buyStock(k.toString());
+                                            }}
+                                        >
+                                            <Text> {v[0]} </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        }
+                        </View>
+                        
+                        <View style={{ display: this.state.screens[4]}}>
+                        {
+                            <View style={{display: this.state.saveScreens[0]}}>
+                                <View style={styles.upgradeC}>
+                                    <View style={{background: 'green', height: cookieHeight, width: deviceWidth, flex: 1,justifyContent: 'space-evenly', alignItems: 'center', flexDirection: 'row'}}>
+                                        <TouchableOpacity style={styles.saveButton}
+                                            onPress={() => {
+                                                if (Platform.OS === 'web'){
+                                                    this.encode();
+                                                    this.setState({saveScreens: ['none', 'block', 'none'],})
+                                                }
+                                                else 
+                                                    alert('no save for phone');
+                                        }}>
+                                            <Text style={{fontSize: 20}}> Save </Text>
+                                        </TouchableOpacity>
+                                        
+                                        <TouchableOpacity style={styles.saveButton}
+                                            onPress={() => {
+                                                if (Platform.OS === 'web')
+                                                    this.setState({saveScreens: ['none', 'none', 'block'],})
+                                                else 
+                                                    alert('no save for phone');    
+                                        }}>
+                                            <Text style={{fontSize: 20}}> Load </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                            }
+                        
+                            {/* Save Screen ends here*/}
+                            <View style={{display: this.state.saveScreens[1]}}>
+                            {
+                                <View style={styles.upgradeC}>
+                                    <View style={{background: 'green', flex: 1, justifyContent: 'center'}}>
+                                        <Text style={styles.gambleText} selectable={false}> Your code is </Text>
+                                        <ScrollView style={{width: deviceWidth/1.2, alignSelf: 'center'}}>
+                                            <Text style={{fontSize: deviceHeight/50, color: 'white'}}> {this.state.encodedCode} </Text>
+                                        </ScrollView>
+                                    </View>
+                                </View>
+                            }
+                            </View>
+                            
+                            <View style={{display: this.state.saveScreens[2]}}>
+                            {
+                                <View style={styles.upgradeC}>
+                                    <View style={{background: 'green', flex: 1, justifyContent: 'space-evenly'}}>
+                                        <View style={{width: deviceWidth/1.2, paddingHorizontal: deviceWidth/14.9, paddingVertical: deviceHeight/26.6, alignSelf: 'center', background: 'white', borderRadius: deviceWidth/59.6}}>
+                                        <TextInput 
+                                            placeholder={this.state.savePh}
+                                            onChangeText={(save) => this.setState({save})}
+                                            value={this.state.save}
+                                        />
+                                        </View>
+                                        <TouchableOpacity style={styles.saveButton}
+                                            onPress={() => {
+                                            this.load(this.state.save);
+                                            this.changeScreen(0,this.state.screens);
+                                        }}>
+                                            <Text> Load </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    
+                                </View>
+                            }
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            );
+        }
     }
 
     
@@ -692,9 +1109,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     stockC: {
-        height: deviceHeight/1.75,
-        backgroundColor: 'red',
-        alignItems: 'flex-start',
+        height: deviceHeight/1.8,
+        alignItems: 'flex-end',
         alignSelf: 'center',
     },
     upgradeC: {
@@ -709,7 +1125,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: deviceHeight/266,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-end',
     },
     buyButton: {
         height: screenHeight/20,
@@ -751,7 +1166,17 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: screenWidth/25,
         fontWeight: 'bold',
-        textAlign: "center",
+        textAlignVertical: 'center',
+        textAlign: 'center',
+        marginHorizontal: deviceWidth/30,
+    },
+    biggerText: {
+        color: 'white',
+        fontSize: screenWidth/20,
+        fontWeight: 'bold',
+        textAlignVertical: 'center',
+        textAlign: 'center',
+        marginHorizontal: deviceWidth/30,
     },
     gambleText: {
         color: 'white',
@@ -773,30 +1198,32 @@ const styles = StyleSheet.create({
         marginVertical: deviceHeight / 80,
     },
     towerText: {
-        width: deviceWidth/0.851,
+        width: deviceWidth - (deviceWidth/3),
         color: 'white',
-        fontSize: screenHeight/25,
+        fontSize: deviceHeight/25,
         fontWeight: '200',
         justifyContent: 'flex-start',
     },
     saveButton: {
         width: deviceWidth/3,
-        background: 'white',
+        backgroundColor: 'white',
         borderRadius: deviceWidth/59.6,
-        paddingVertical: deviceHeight/26.6,
-        textAlign: 'center',
-        marginHorizontal: deviceWidth/19.867,
+        alignItems: 'center',
+        padding: deviceHeight/25,
         alignSelf: 'center',
     },
     rowContainer: {
         flexDirection: "row",
-        marginVertical: deviceHeight / 30,
-        marginHorizontal: deviceWidth/16.805,
+        flexWrap: 'wrap',
+        marginVertical: deviceHeight / 25,
+        marginHorizontal: deviceWidth/30,
+        alignItems: 'center'
     },
     imageContainer: {
         alignItems: "center",
         justifyContent: "center",
         marginHorizontal: deviceWidth / 15,
+        marginVertical: deviceHeight / 35,
         height: screenHeight / 20,
         width: deviceWidth/11.203,
     },
